@@ -106,7 +106,7 @@ fun score(card_list,goal) =
         val is_same_color = all_same_color(card_list)
     in
     case card_list of 
-        [] => goal
+        [] => goal div 2
         | xs => case (sum_hand > goal) of
                     true => (case is_same_color of
                                 true => 3 * (sum_hand - goal) div 2
@@ -119,14 +119,14 @@ fun score(card_list,goal) =
 fun officiate(card_list, move_list, goal) =
     let fun aux(held_cards, move_list_aux, card_list_aux, goal_aux) =
             case move_list_aux of 
-                [] => score(held_cards, goal_aux)
-                | Discard x::xs => aux(remove_card(held_cards, x, IllegalMove), xs, card_list_aux, goal_aux)
-                | Draw z::zs => case card_list_aux of
-                              [] => score(held_cards, goal_aux)
-                              | x::xs => case score(held_cards, goal_aux) > goal_aux of
-                                        true => score(held_cards, goal_aux)
-                                        | false => aux(x::held_cards, zs, remove_card(x), goal_aux)
-
+                [] => score(held_cards, goal_aux) 
+                | x::xs => case x of
+                            Discard z => aux(remove_card(held_cards, z, IllegalMove), xs, card_list_aux, goal_aux)
+                            | Draw => case card_list_aux of
+                                        [] => score(held_cards, goal_aux)
+                                        | y::ys => case score(y::held_cards, goal_aux) > goal_aux of
+                                                    true => score(held_cards, goal_aux)
+                                                    | false => aux(y::held_cards, xs, ys, goal_aux)
     in
         aux([], move_list, card_list, goal)
     end
@@ -151,16 +151,14 @@ val test4 = similar_names ([["Fred","Fredrick"],["Elizabeth","Betty"],["Freddie"
 val test4_1 = similar_names ([["Fred","Fredrick"],["Elizabeth","Betty"],["Freddie","Fred","F"]], {first="Fred", middle="W", last="Smith"})
 val test5 = card_color (Clubs, Num 2) = Black
 val test6 = card_value (Clubs, Num 2) = 2
+val test11_2 = officiate([(Hearts, Num 2),(Clubs, Num 4),(Diamonds, Num 2),(Hearts, Ace)],[Draw, Draw, Draw, Draw, Discard(Clubs, Num 4)], 20)
 val test7 = remove_card ([(Clubs, Num 2),(Clubs, Num 2),(Clubs, Num 2),(Hearts, Ace),(Clubs, Num 2)], (Clubs, Num 2), IllegalMove)
 val test8 = all_same_color [(Diamonds, Num 2),(Hearts, Ace), (Hearts, Ace)] = true
 val test9 = sum_cards [(Clubs, Num 2),(Clubs, Num 2), (Hearts, Ace), (Spades, Num 7)]
 val test10 = score ([(Hearts, Num 2),(Clubs, Num 4), (Clubs, Num 2),(Clubs, Num 2), (Hearts, Ace), (Spades, Num 7)],10)
-val test11 = officiate ([(Hearts, Num 2),(Clubs, Num 4)],[Draw], 15) = 6
+val test11 = officiate ([(Hearts, Num 2),(Clubs, Num 4)],[Draw], 15)
+
 (* 
-
-
-
-
 
 val test12 = officiate ([(Clubs,Ace),(Spades,Ace),(Clubs,Ace),(Spades,Ace)],
                         [Draw,Draw,Draw,Draw,Draw],
